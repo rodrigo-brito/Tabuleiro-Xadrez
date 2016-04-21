@@ -19,7 +19,7 @@ jQuery(document).ready(function($){
 	var realcarTabuleiro = function(square) {
 		var posicaoTabuleiro = $('#tabuleiro .square-' + square);
 		if (posicaoTabuleiro.hasClass('black-3c85d') === true) {
-    		posicaoTabuleiro.css('background', color_highlight_black);
+			posicaoTabuleiro.css('background', color_highlight_black);
 		}else{
 			posicaoTabuleiro.css('background', color_highlight_white);
 		}
@@ -31,10 +31,10 @@ jQuery(document).ready(function($){
 	 * @param  {String} classe   Classe da mensagem (info,danger,warning)
 	 * @param  {String} mensagem Mensagem a ser exibida
 	 */
-	var adicionarAlerta = function(jogador, classe, mensagem){
-		var alerta = '<div class="alert alert-'+classe+'"><strong>'+jogador+': </strong>'+mensagem+'</div>';
-		$("#alertas").prepend(alerta);
-	}
+	 var adicionarAlerta = function(jogador, classe, mensagem){
+	 	var alerta = '<div class="alert alert-'+classe+'"><strong>'+jogador+': </strong>'+mensagem+'</div>';
+	 	$("#alertas").prepend(alerta);
+	 }
 
 	/**
 	 * Verifica se o jogo finalizou ou se é o turno da peça
@@ -51,7 +51,7 @@ jQuery(document).ready(function($){
 	 * Valida a movimentação
 	 */
 	var onDrop = function(source, target) {
-		removerRealce();
+	 	removerRealce();
 
 		// Verifica a legalidade da movimentação
 		var move = game.move({
@@ -59,20 +59,17 @@ jQuery(document).ready(function($){
 			to: target,
 			promotion: 'q'
 		});
+
 		// Se a movimentação é ilegal, volta com a peça
 		if (move === null) return 'snapback';
 
-		//Emite mensagens de movimentação
-		adicionarAlerta(game.turn() == 'w' ? 'Preto' : 'Branco', 'info', move.san); //Aidicona alerta de movimentação
-		if(game.in_check()){ //Verifica se jogador está em cheque
-			adicionarAlerta(game.turn() == 'w' ? 'Preto' : 'Branco','warning','Cheque!');
-		}
+		imprimirMovimentacao( move );//Aidicona alerta de movimentação
 	};
 
 	/**
 	 * Quando o mouse sobrepoe uma dada posição no tabuleiro
 	 */
-	var onMouseoverSquare = function(square, piece) {
+	 var onMouseoverSquare = function(square, piece) {
 		// Recebe a lista de possibilidades de movimentação
 		var moves = game.moves({
 			square: square,
@@ -104,31 +101,63 @@ jQuery(document).ready(function($){
 	};
 
 	/**
-	 * Trata lógica de negócio por iteração
+	 * Retorna o nome da peça a partir de sua abreviação
 	 */
-	var randGame = function(){
-		if (!game.game_over()) {
-			if(game.in_check()){ //Verifica se jogador está em cheque
-				adicionarAlerta(game.turn() == 'w' ? 'Preto' : 'Branco','warning','Cheque!');
+	var getNomePeca = function( abreviacao ){
+		switch(abreviacao) {
+			case 'p':
+				return 'Peão'
+			case 'k':
+				return 'Rei'
+			case 'b':
+				return 'Bispo'
+			case 'q':
+				return 'Rainha'
+			case 'r':
+				return 'Torre'
+			case 'n':
+				return 'Cavalo'
+			default:
+				return 'Peça'
+		}
+	}
+
+	/**
+	 * Imprimir Movimentação
+	 */
+	var imprimirMovimentacao = function( movimentacao ){
+		var jogador = movimentacao.color == 'w' ? 'Branco' : 'Preto';
+		if ( !game.game_over() ) {
+			adicionarAlerta( jogador ,'info', getNomePeca( movimentacao.piece )+' '+movimentacao.from+' para '+movimentacao.to);
+			if( game.in_check() ){ //Verifica se jogador está em cheque
+				adicionarAlerta( jogador ,'warning', 'Cheque!' );
 			}
-			var moves = game.moves(); //Recebe as possibilidades de movimentação
-			var move = moves[Math.floor(Math.random() * moves.length)];//Seleciona um movimento aleatorio
-			game.move(move); //Movimenta peça
-			board.position(game.fen()); //Atualiza Tabuleiro
-			adicionarAlerta(game.turn() == 'w' ? 'Branco' : 'Preto','info',move); //Aidicona alerta de movimentação
-			setTimeout(randGame, 1000);
 		}else{
 			//Emite mensagens de fim de jogo
-			if(game.in_checkmate()){
-				adicionarAlerta(game.turn() == 'w' ? 'Preto' : 'Branco','danger','Cheque Mate!');
+			if( game.in_checkmate() ){
+				adicionarAlerta( jogador, 'danger', 'Cheque Mate!' );
 			}
-			adicionarAlerta('Jogador','danger','Fim de jogo!');
+			adicionarAlerta('Partida','danger','Fim de jogo!');
 		}
 	};
 
-	var moveToString = function(move){
-		console.log(move);
-	}
+	/**
+	 * Trata lógica de negócio por iteração
+	 */
+	 var randGame = function(){
+	 	if (!game.game_over()) {
+
+			var moves = game.moves(); //Recebe as possibilidades de movimentação
+			var move = moves[Math.floor(Math.random() * moves.length)];//Seleciona um movimento aleatorio
+			var movimentacao_result = game.move(move); //Movimenta peça
+
+			board.position(game.fen()); //Atualiza Tabuleiro
+			imprimirMovimentacao( movimentacao_result );//Aidicona alerta de movimentação
+
+			//Aciona nova jogada randômica em 1 segundo
+			setTimeout(randGame, 1000);
+		}
+	};
 
 	/**
 	 * Lista de configurações inicias do tabuleiro
