@@ -26,6 +26,17 @@ jQuery(document).ready(function($){
 	};
 
 	/**
+	 * Adiciona mensagem de movimentação, cheque ou chequemate
+	 * @param  {String} jogador  Nome do Jogador ou Cor
+	 * @param  {String} classe   Classe da mensagem (info,danger,warning)
+	 * @param  {String} mensagem Mensagem a ser exibida
+	 */
+	var adicionarAlerta = function(jogador, classe, mensagem){
+		var alerta = '<div class="alert alert-'+classe+'"><strong>'+jogador+': </strong>'+mensagem+'</div>';
+		$("#alertas").prepend(alerta);
+	}
+
+	/**
 	 * Verifica se o jogo finalizou ou se é o turno da peça
 	 */
 	var onDragStart = function(source, piece) {
@@ -48,9 +59,14 @@ jQuery(document).ready(function($){
 			to: target,
 			promotion: 'q'
 		});
-
 		// Se a movimentação é ilegal, volta com a peça
 		if (move === null) return 'snapback';
+
+		//Emite mensagens de movimentação
+		adicionarAlerta(game.turn() == 'w' ? 'Preto' : 'Branco', 'info', move.san); //Aidicona alerta de movimentação
+		if(game.in_check()){ //Verifica se jogador está em cheque
+			adicionarAlerta(game.turn() == 'w' ? 'Preto' : 'Branco','warning','Cheque!');
+		}
 	};
 
 	/**
@@ -73,7 +89,6 @@ jQuery(document).ready(function($){
 		for (var i = 0; i < moves.length; i++) {
 			realcarTabuleiro(moves[i].to);
 		}
-		console.log(moves);
 	};
 
 	// Quando o mouse sai de cima da posição, remove o realce
@@ -89,6 +104,33 @@ jQuery(document).ready(function($){
 	};
 
 	/**
+	 * Trata lógica de negócio por iteração
+	 */
+	var randGame = function(){
+		if (!game.game_over()) {
+			if(game.in_check()){ //Verifica se jogador está em cheque
+				adicionarAlerta(game.turn() == 'w' ? 'Preto' : 'Branco','warning','Cheque!');
+			}
+			var moves = game.moves(); //Recebe as possibilidades de movimentação
+			var move = moves[Math.floor(Math.random() * moves.length)];//Seleciona um movimento aleatorio
+			game.move(move); //Movimenta peça
+			board.position(game.fen()); //Atualiza Tabuleiro
+			adicionarAlerta(game.turn() == 'w' ? 'Branco' : 'Preto','info',move); //Aidicona alerta de movimentação
+			setTimeout(randGame, 1000);
+		}else{
+			//Emite mensagens de fim de jogo
+			if(game.in_checkmate()){
+				adicionarAlerta(game.turn() == 'w' ? 'Preto' : 'Branco','danger','Cheque Mate!');
+			}
+			adicionarAlerta('Jogador','danger','Fim de jogo!');
+		}
+	};
+
+	var moveToString = function(move){
+		console.log(move);
+	}
+
+	/**
 	 * Lista de configurações inicias do tabuleiro
 	 */
 	var cfg = {
@@ -102,4 +144,11 @@ jQuery(document).ready(function($){
 	};
 	// Inicia o tabuleiro
 	board = ChessBoard('tabuleiro', cfg);
+
+	/**
+	 * Inicia jogo randômico
+	 */
+	$('.btn-rand-game').click(function(event) {
+		setTimeout(randGame, 1000);
+	});
 });

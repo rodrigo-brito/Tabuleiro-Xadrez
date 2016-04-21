@@ -1,0 +1,14 @@
+html,body{ height:100%; }
+
+.container, .row {
+    height:100%;
+}
+
+#sidebar {
+	height: 100%;
+}
+
+#sidebar .panel {
+	height: 85%;
+	overflow: scroll;
+}
