@@ -4,7 +4,9 @@ Tabuleiro de Xadrez para aplicação de Inteligência Artificial
 
 Professor: Gabriel Novy
 
-## Bibliotecas e documentações complementares
+[Demonstração](http://rodrigo-brito.github.io/Tabuleiro-Xadrez/) - Visualizar Tabuleiro
+
+## Bibliotecas utilizadas e documentação complementar
 
 - [Chess JS](https://github.com/jhlywa/chess.js) - Lógica e validação de regras
 - [ChessBoard JS](http://chessboardjs.com/) - Interface do Tabuleiro
